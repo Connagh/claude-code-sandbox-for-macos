@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+# ============================================================================
+# cc-seatbelt — launch a command inside a macOS seatbelt sandbox
+# ============================================================================
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROFILE_SRC="${SCRIPT_DIR}/profile.sb"
+
+WORK_DIR=""
+EXTRA_READS=()
+PROFILE_OUT=""
+SKIP_PARENT_FIX=0
+CMD_ARGS=()
+
+show_help() {
+  cat >&2 <<USAGE
+Usage: cc-seatbelt [OPTIONS] [--] <command> [args...]
+
+Runs <command> inside a macOS seatbelt sandbox that blocks filesystem
+reads outside the working directory.
+
+Options:
+  -d, --dir <path>          Working directory (default: \$PWD)
+  -r, --allow-read <path>   Grant read access to an extra path (repeatable)
+  -o, --profile-out <file>  Write generated profile to <file> and keep it
+      --no-parent-fix       Skip parent-directory listing workaround
+  -h, --help                Show this help
+
+Examples:
+  cc-seatbelt claude                         # sandbox claude in \$PWD
+  cc-seatbelt -d ~/projects/myapp claude     # sandbox in specific dir
+  cc-seatbelt -r ~/shared-libs claude        # grant extra read path
+  cc-seatbelt bash                           # explore the sandbox
+USAGE
+  exit 0
+}
+
+# ---- argument parsing ----
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -d|--dir)        WORK_DIR="$2"; shift 2 ;;
+    -r|--allow-read) EXTRA_READS+=("$2"); shift 2 ;;
+    -o|--profile-out) PROFILE_OUT="$2"; shift 2 ;;
+    --no-parent-fix) SKIP_PARENT_FIX=1; shift ;;
+    -h|--help)       show_help ;;
+    --)              shift; break ;;
+    -*)              echo "Error: unknown option $1" >&2; show_help ;;
+    *)               break ;;
+  esac
+done
+
+while [[ $# -gt 0 ]]; do
+  CMD_ARGS+=("$1"); shift
+done
+[[ ${#CMD_ARGS[@]} -eq 0 ]] && CMD_ARGS=("bash")
+
+# ---- resolve paths ----
+WORK_DIR="${WORK_DIR:-$(pwd)}"
+WORK_DIR="$(realpath -m "$WORK_DIR" 2>/dev/null || realpath "$WORK_DIR" 2>/dev/null || echo "$WORK_DIR")"
+USER_HOME="$HOME"
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}"
+
+# ---- check for nested sandbox ----
+if sandbox-exec -p '(version 1)(allow default)' true 2>/dev/null; [ $? -eq 71 ]; then
+  echo "Error: already inside a sandbox — macOS does not support nesting." >&2
+  exit 1
+fi
+
+# ---- check profile exists ----
+if [[ ! -f "$PROFILE_SRC" ]]; then
+  echo "Error: profile.sb not found at $PROFILE_SRC" >&2
+  exit 1
+fi
+
+# ---- build parent-directory listing rules ----
+# Claude Code needs to list (not read) every ancestor of WORK_DIR,
+# otherwise it blanks PATH and disables color output.
+build_parent_rules() {
+  local dir="$1"
+  [[ "$dir" != /* ]] && { echo "Error: work dir must be absolute: $dir" >&2; exit 1; }
+
+  local rules="" acc=""
+  local IFS='/'
+  local parts
+  read -ra parts <<< "$dir"
+
+  for part in "${parts[@]}"; do
+    [[ -z "$part" ]] && { [[ -z "$acc" ]] && acc="/"; continue; }
+    [[ "$acc" == "/" ]] && acc="/$part" || acc="$acc/$part"
+    local safe="${acc//\\/\\\\}"
+    safe="${safe//\"/\\\"}"
+    rules+="(allow file-read* (literal \"${safe}\"))"$'\n'
+  done
+  echo "$rules"
+}
+
+# ---- build extra --allow-read rules ----
+build_extra_read_rules() {
+  local rules=""
+  for p in "${EXTRA_READS[@]}"; do
+    local abs
+    abs="$(realpath -m "$p" 2>/dev/null || realpath "$p" 2>/dev/null || echo "$p")"
+    local safe="${abs//\\/\\\\}"
+    safe="${safe//\"/\\\"}"
+    rules+="(allow file-read* (subpath \"${safe}\"))"$'\n'
+  done
+  echo "$rules"
+}
+
+# ---- assemble profile ----
+TMPFILE="$( (mkdir -p "$HOME/.config/claude-code-sandbox-for-macos" && \
+  mktemp "$HOME/.config/claude-code-sandbox-for-macos/profile.XXXXXXXXXX.sb") 2>/dev/null || \
+  mktemp "/tmp/cc-seatbelt-profile.XXXXXXXXXX.sb")"
+
+{
+  cat "$PROFILE_SRC"
+  echo ""
+
+  if [[ "$SKIP_PARENT_FIX" -eq 0 ]]; then
+    echo ";; --- auto-generated: parent directory listing for $WORK_DIR ---"
+    build_parent_rules "$WORK_DIR"
+  fi
+
+  if [[ ${#EXTRA_READS[@]} -gt 0 ]]; then
+    echo ";; --- auto-generated: extra read paths ---"
+    build_extra_read_rules
+  fi
+} > "$TMPFILE"
+
+if [[ -n "$PROFILE_OUT" ]]; then
+  cp "$TMPFILE" "$PROFILE_OUT"
+  echo "Profile written to $PROFILE_OUT" >&2
+fi
+
+# ---- cleanup on exit ----
+cleanup() { rm -f "$TMPFILE"; }
+trap cleanup EXIT
+
+# ---- launch ----
+exec sandbox-exec \
+  -f "$TMPFILE" \
+  -D "WORK_DIR=$WORK_DIR" \
+  -D "USER_HOME=$USER_HOME" \
+  -D "CACHE_DIR=$CACHE_DIR" \
+  "${CMD_ARGS[@]}"
