@@ -2,7 +2,7 @@
 set -uo pipefail
 
 # ============================================================================
-# cc-sandbox — launch a command inside a macOS seatbelt sandbox
+# claude-sandbox — launch a command inside a macOS seatbelt sandbox
 # ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -16,7 +16,7 @@ CMD_ARGS=()
 
 show_help() {
   cat >&2 <<USAGE
-Usage: cc-sandbox [OPTIONS] [--] <command> [args...]
+Usage: claude-sandbox [OPTIONS] [--] <command> [args...]
 
 Runs <command> inside a macOS seatbelt sandbox that blocks filesystem
 reads outside the working directory.
@@ -29,10 +29,10 @@ Options:
   -h, --help                Show this help
 
 Examples:
-  cc-sandbox claude                         # sandbox claude in \$PWD
-  cc-sandbox -d ~/projects/myapp claude     # sandbox in specific dir
-  cc-sandbox -r ~/shared-libs claude        # grant extra read path
-  cc-sandbox bash                           # explore the sandbox
+  claude-sandbox claude                         # sandbox claude in \$PWD
+  claude-sandbox -d ~/projects/myapp claude     # sandbox in specific dir
+  claude-sandbox -r ~/shared-libs claude        # grant extra read path
+  claude-sandbox bash                           # explore the sandbox
 USAGE
   exit 0
 }
@@ -67,8 +67,8 @@ if [[ "$WORK_DIR" == "$USER_HOME" ]]; then
   echo "WARNING: Working directory is your home folder ($USER_HOME)." >&2
   echo "         The sandbox grants full read/write access to the working directory," >&2
   echo "         so this effectively disables all protection." >&2
-  echo "         Run cc-sandbox from a project folder instead, e.g.:" >&2
-  echo "           cd ~/my-project && cc-sandbox claude" >&2
+  echo "         Run claude-sandbox from a project folder instead, e.g.:" >&2
+  echo "           cd ~/my-project && claude-sandbox claude" >&2
   exit 1
 fi
 
@@ -135,7 +135,7 @@ build_extra_read_rules() {
 # ---- assemble profile ----
 TMPFILE="$( (mkdir -p "$HOME/.config/claude-code-sandbox-for-macos" && \
   mktemp "$HOME/.config/claude-code-sandbox-for-macos/profile.XXXXXXXXXX.sb") 2>/dev/null || \
-  mktemp "/tmp/cc-sandbox-profile.XXXXXXXXXX.sb")"
+  mktemp "/tmp/claude-sandbox-profile.XXXXXXXXXX.sb")"
 
 {
   cat "$PROFILE_SRC"
