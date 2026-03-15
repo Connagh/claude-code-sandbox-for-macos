@@ -69,7 +69,8 @@ You can also launch Claude Code sandboxed and ask it to run `cat ~/.zshrc` — i
 
 Everything else in your home folder — SSH keys, shell history, `.env` files, other projects, Documents, Desktop, Downloads, and anything not listed above.
 
-## Options
+<details>
+<summary><strong>Options</strong></summary>
 
 Most of the time you just need `cc-seatbelt claude`. But if you need more control:
 
@@ -87,7 +88,10 @@ cc-seatbelt -o debug.sb claude
 cc-seatbelt bash
 ```
 
-## Customizing the Rules
+</details>
+
+<details>
+<summary><strong>Customising the Rules</strong></summary>
 
 If Claude Code needs access to an additional folder, edit `profile.sb` in the repo to add it, then re-run `./install.sh`.
 
@@ -107,9 +111,24 @@ log stream --predicate 'eventMessage contains "deny"' --style compact | grep -i 
 
 Or open Console.app and filter by `sandbox`.
 
-## How It Works
+</details>
+
+<details>
+<summary><strong>How It Works</strong></summary>
 
 The `cc-seatbelt` script takes the sandbox rules from `profile.sb`, combines them with the folder you're working in, and hands everything to macOS's `sandbox-exec`. From that point on, the operating system enforces the rules — Claude Code literally cannot access files outside the allowed paths, regardless of what it tries to do.
+
+</details>
+
+<details>
+<summary><strong>Limitations</strong></summary>
+
+- **macOS only** — uses Apple's `sandbox-exec`
+- **No nested sandboxes** — a macOS limitation, not ours
+- **Network is unrestricted** — Claude needs internet access to work, so network requests aren't blocked
+- **Symlinks** — a malicious repo could include a symlink that points outside the sandbox
+
+</details>
 
 ## Uninstall
 
@@ -118,13 +137,6 @@ The `cc-seatbelt` script takes the sandbox rules from `profile.sb`, combines the
 ```
 
 This removes the `cc-seatbelt` command and its config. Your projects are not touched.
-
-## Limitations
-
-- **macOS only** — uses Apple's `sandbox-exec`
-- **No nested sandboxes** — a macOS limitation, not ours
-- **Network is unrestricted** — Claude needs internet access to work, so network requests aren't blocked
-- **Symlinks** — a malicious repo could include a symlink that points outside the sandbox
 
 ## License
 
