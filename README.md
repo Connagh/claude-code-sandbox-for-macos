@@ -39,7 +39,8 @@ cd ~/my-project
 cc-sandbox claude
 ```
 
-## Test It Works
+<details>
+<summary><strong>Test It Works</strong></summary>
 
 Open a sandboxed shell to check that files outside your project are blocked:
 
@@ -55,7 +56,10 @@ exit
 
 You can also launch Claude Code sandboxed and ask it to run `cat ~/.zshrc` — it should fail.
 
-## What It Allows
+</details>
+
+<details>
+<summary><strong>What It Allows</strong></summary>
 
 - Your current project folder — full read and write access
 - System files that programs need to run (`/usr`, `/bin`, `/etc`, `/System`, etc.)
@@ -65,9 +69,14 @@ You can also launch Claude Code sandboxed and ask it to run `cat ~/.zshrc` — i
 - Keychain access so `claude login` works
 - Full network access (Claude needs this to talk to the API)
 
-## What It Blocks
+</details>
+
+<details>
+<summary><strong>What It Blocks</strong></summary>
 
 Everything else in your home folder — SSH keys, shell history, `.env` files, other projects, Documents, Desktop, Downloads, and anything not listed above.
+
+</details>
 
 <details>
 <summary><strong>Options</strong></summary>
@@ -130,13 +139,16 @@ The `cc-sandbox` script takes the sandbox rules from `profile.sb`, combines them
 
 </details>
 
-## Uninstall
+<details>
+<summary><strong>Uninstall</strong></summary>
 
 ```bash
 ./uninstall.sh
 ```
 
 This removes the `cc-sandbox` command and its config. Your projects are not touched.
+
+</details>
 
 ## License
 
