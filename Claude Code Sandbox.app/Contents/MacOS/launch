@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+# ============================================================================
+# Self-contained launcher — no dependency on cc-sandbox CLI
+# ============================================================================
+
+APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+PROFILE_SRC="${APP_DIR}/Resources/profile.sb"
+USER_HOME="$HOME"
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}"
+
+# ---- check profile exists ----
+if [[ ! -f "$PROFILE_SRC" ]]; then
+  osascript -e 'display alert "Claude Code Sandbox" message "profile.sb not found inside the app bundle." as critical'
+  exit 1
+fi
+
+# ---- ask user to pick a project folder ----
+WORK_DIR="$(osascript -e '
+  try
+    set chosenFolder to POSIX path of (choose folder with prompt "Choose a project folder to sandbox:")
+    return chosenFolder
+  on error
+    return ""
+  end try
+' 2>/dev/null)"
+
+if [[ -z "$WORK_DIR" ]]; then
+  exit 0
+fi
+
+# Remove trailing slash
+WORK_DIR="${WORK_DIR%/}"
+
+# ---- block home directory ----
+if [[ "$WORK_DIR" == "$USER_HOME" ]]; then
+  osascript -e 'display alert "Claude Code Sandbox" message "You selected your home folder. The sandbox would have no effect — pick a project folder instead." as warning'
+  exit 1
+fi
+
+# ---- reject paths with characters unsafe for SBPL interpolation ----
+if [[ "$WORK_DIR" =~ [\"\\()\;] ]]; then
+  osascript -e 'display alert "Claude Code Sandbox" message "The folder path contains characters that are not supported (quotes, backslashes, or parentheses). Rename the folder and try again." as warning'
+  exit 1
+fi
+
+# ---- build parent-directory listing rules ----
+build_parent_rules() {
+  local dir="$1" rules="" acc=""
+  local IFS='/'
+  local parts
+  read -ra parts <<< "$dir"
+
+  for part in "${parts[@]}"; do
+    [[ -z "$part" ]] && { [[ -z "$acc" ]] && acc="/"; continue; }
+    [[ "$acc" == "/" ]] && acc="/$part" || acc="$acc/$part"
+    rules+="(allow file-read* (literal \"${acc}\"))"$'\n'
+  done
+  echo "$rules"
+}
+
+# ---- assemble profile to temp file ----
+TMPFILE="$(mktemp /tmp/cc-sandbox-app.XXXXXXXXXX.sb)"
+chmod 600 "$TMPFILE"
+
+{
+  cat "$PROFILE_SRC"
+  echo ""
+  echo ";; --- auto-generated: parent directory listing for $WORK_DIR ---"
+  build_parent_rules "$WORK_DIR"
+} > "$TMPFILE"
+
+# ---- launch in Terminal ----
+# Escape single quotes in paths for the shell command inside AppleScript
+escape_for_shell() { printf '%s' "$1" | sed "s/'/'\\\\''/g"; }
+
+SAFE_TMPFILE="$(escape_for_shell "$TMPFILE")"
+SAFE_WORK_DIR="$(escape_for_shell "$WORK_DIR")"
+SAFE_USER_HOME="$(escape_for_shell "$USER_HOME")"
+SAFE_CACHE_DIR="$(escape_for_shell "$CACHE_DIR")"
+
+osascript -e "
+  tell application \"Terminal\"
+    activate
+    do script \"sandbox-exec -f '${SAFE_TMPFILE}' -D 'WORK_DIR=${SAFE_WORK_DIR}' -D 'USER_HOME=${SAFE_USER_HOME}' -D 'CACHE_DIR=${SAFE_CACHE_DIR}' claude; rm -f '${SAFE_TMPFILE}'\"
+  end tell
+"

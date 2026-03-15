@@ -6,4 +6,8 @@ echo "Removing claude-code-sandbox-for-macos..."
 rm -f "$PREFIX/bin/cc-sandbox"
 rm -rf "$PREFIX/share/claude-code-sandbox-for-macos"
 rm -rf "$HOME/.config/claude-code-sandbox-for-macos"
+if [[ -d "/Applications/Claude Code Sandbox.app" ]]; then
+  rm -rf "/Applications/Claude Code Sandbox.app"
+  echo "Removed Claude Code Sandbox.app from /Applications."
+fi
 echo "Done."

@@ -62,6 +62,29 @@ WORK_DIR="$(realpath -m "$WORK_DIR" 2>/dev/null || realpath "$WORK_DIR" 2>/dev/n
 USER_HOME="$HOME"
 CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}"
 
+# ---- warn if working directory is the home folder ----
+if [[ "$WORK_DIR" == "$USER_HOME" ]]; then
+  echo "WARNING: Working directory is your home folder ($USER_HOME)." >&2
+  echo "         The sandbox grants full read/write access to the working directory," >&2
+  echo "         so this effectively disables all protection." >&2
+  echo "         Run cc-sandbox from a project folder instead, e.g.:" >&2
+  echo "           cd ~/my-project && cc-sandbox claude" >&2
+  exit 1
+fi
+
+# ---- reject paths with characters unsafe for SBPL interpolation ----
+validate_path_safe() {
+  if [[ "$1" =~ [\"\\()\;] ]]; then
+    echo "Error: path contains characters unsafe for sandbox profile: $1" >&2
+    echo "       Rename the directory to remove quotes, backslashes, or parentheses." >&2
+    exit 1
+  fi
+}
+validate_path_safe "$WORK_DIR"
+for p in "${EXTRA_READS[@]+"${EXTRA_READS[@]}"}"; do
+  validate_path_safe "$p"
+done
+
 # ---- check for nested sandbox ----
 if sandbox-exec -p '(version 1)(allow default)' true 2>/dev/null; [ $? -eq 71 ]; then
   echo "Error: already inside a sandbox — macOS does not support nesting." >&2

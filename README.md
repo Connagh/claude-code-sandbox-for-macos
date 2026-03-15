@@ -8,21 +8,24 @@ This tool adds that second layer, at the operating system level, using Apple's b
 
 ## Quick Start
 
+### Option A: Use the app
+
+The easiest way. No install needed.
+
+1. [Download the repo](https://github.com/Connagh/claude-code-sandbox-for-macos)
+2. Move `Claude Code Sandbox.app` to `/Applications`
+3. Open it — pick a project folder — Terminal launches with a sandboxed Claude session
+
+Drag it to your Dock for quick access. The app is fully self-contained (requires Claude Code CLI to be installed).
+
+### Option B: Use the CLI
+
+If you prefer the terminal:
+
 ```bash
 git clone https://github.com/Connagh/claude-code-sandbox-for-macos
 cd claude-code-sandbox-for-macos
 chmod +x cc-sandbox install.sh uninstall.sh
-```
-
-You can run it straight away:
-
-```bash
-./cc-sandbox claude
-```
-
-Or install it so the `cc-sandbox` command works from any folder:
-
-```bash
 ./install.sh
 ```
 
@@ -38,6 +41,8 @@ Then from any project folder:
 cd ~/my-project
 cc-sandbox claude
 ```
+
+The installer also copies the app to `/Applications`.
 
 <details>
 <summary><strong>Test It Works</strong></summary>
@@ -146,7 +151,7 @@ The `cc-sandbox` script takes the sandbox rules from `profile.sb`, combines them
 ./uninstall.sh
 ```
 
-This removes the `cc-sandbox` command and its config. Your projects are not touched.
+This removes the `cc-sandbox` command, the `.app` from `/Applications`, and its config. Your projects are not touched.
 
 </details>
 
