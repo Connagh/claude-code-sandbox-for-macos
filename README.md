@@ -13,7 +13,7 @@ This tool wraps Claude Code in an OS-level sandbox using Apple's built-in `sandb
 Copy and paste this into your terminal:
 
 ```bash
-git clone https://github.com/Connagh/claude-code-sandbox-for-macos && cd claude-code-sandbox-for-macos && chmod +x claude-sandbox install.sh && ./install.sh && grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' ~/.zshrc || echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
+cd ~ && rm -rf claude-code-sandbox-for-macos && git clone https://github.com/Connagh/claude-code-sandbox-for-macos && cd claude-code-sandbox-for-macos && chmod +x claude-sandbox install.sh && ./install.sh && cd ~ && grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' ~/.zshrc || echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
 ```
 
 Then from any project folder:
