@@ -9,16 +9,19 @@ This tool adds that second layer, at the operating system level, using Apple's b
 ## Quick Start
 
 ```bash
+# copy and paste this entire block into your terminal
+
+# download
 git clone https://github.com/Connagh/claude-code-sandbox-for-macos
 cd claude-code-sandbox-for-macos
-chmod +x claude-sandbox install.sh uninstall.sh
+
+# install (also deletes the downloaded repo)
+chmod +x claude-sandbox install.sh
 ./install.sh
-```
 
-If your terminal doesn't recognise `claude-sandbox` after installing, add this line to your `~/.zshrc` and restart your terminal:
-
-```bash
-export PATH="$HOME/.local/bin:$PATH"
+# add to PATH (only if not already there)
+grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' ~/.zshrc || echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
 ```
 
 Then from any project folder:
@@ -91,7 +94,7 @@ claude-sandbox bash
 <details>
 <summary><strong>Customising the Rules</strong></summary>
 
-If Claude Code needs access to an additional folder, edit `profile.sb` in the repo to add it, then re-run `./install.sh`.
+If Claude Code needs access to an additional folder, edit `~/.local/share/claude-code-sandbox-for-macos/profile.sb` to add it, then relaunch `claude-sandbox`.
 
 You can also grant one-off read access without editing the profile using the `-r` flag:
 
@@ -132,10 +135,12 @@ The `claude-sandbox` script takes the sandbox rules from `profile.sb`, combines 
 <summary><strong>Uninstall</strong></summary>
 
 ```bash
-./uninstall.sh
+rm -f ~/.local/bin/claude-sandbox
+rm -rf ~/.local/share/claude-code-sandbox-for-macos
+rm -rf ~/.config/claude-code-sandbox-for-macos
 ```
 
-This removes the `claude-sandbox` command and its config. Your projects are not touched.
+Your projects are not touched.
 
 </details>
 
