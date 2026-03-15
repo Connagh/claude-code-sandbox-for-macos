@@ -1,5 +1,7 @@
 # Claude Code Sandbox for macOS
 
+![Claude Code Sandbox](https://i.imgur.com/qR7pv1v.jpeg)
+
 Claude Code has access to your system by default. There's no OS-level protection, so if a prompt injection tricks Claude into approving something, nothing stops it.
 
 This tool wraps Claude Code in an OS-level sandbox using Apple's built-in `sandbox-exec`. Claude can **only** access the project folder you're working in. Everything else is blocked by macOS itself. Run `claude-sandbox claude` instead of `claude`.
