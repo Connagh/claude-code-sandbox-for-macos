@@ -10,20 +10,10 @@ This tool wraps Claude Code in an OS-level sandbox using Apple's built-in `sandb
 
 ## Quick Start
 
+Copy and paste this into your terminal:
+
 ```bash
-# copy and paste this entire block into your terminal
-
-# download
-git clone https://github.com/Connagh/claude-code-sandbox-for-macos
-cd claude-code-sandbox-for-macos
-
-# install
-chmod +x claude-sandbox install.sh
-./install.sh
-
-# add to PATH (only if not already there)
-grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' ~/.zshrc || echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
+git clone https://github.com/Connagh/claude-code-sandbox-for-macos && cd claude-code-sandbox-for-macos && chmod +x claude-sandbox install.sh && ./install.sh && grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' ~/.zshrc || echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
 ```
 
 Then from any project folder:
@@ -126,6 +116,13 @@ rm -rf ~/.config/claude-code-sandbox-for-macos
 ```
 
 Your projects are not touched.
+
+</details>
+
+<details>
+<summary><strong>Update</strong></summary>
+
+Re-run the install block from Quick Start. It will overwrite the existing installation.
 
 </details>
 
