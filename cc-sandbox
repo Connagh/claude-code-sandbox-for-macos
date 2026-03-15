@@ -2,7 +2,7 @@
 set -uo pipefail
 
 # ============================================================================
-# cc-seatbelt — launch a command inside a macOS seatbelt sandbox
+# cc-sandbox — launch a command inside a macOS seatbelt sandbox
 # ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -16,7 +16,7 @@ CMD_ARGS=()
 
 show_help() {
   cat >&2 <<USAGE
-Usage: cc-seatbelt [OPTIONS] [--] <command> [args...]
+Usage: cc-sandbox [OPTIONS] [--] <command> [args...]
 
 Runs <command> inside a macOS seatbelt sandbox that blocks filesystem
 reads outside the working directory.
@@ -29,10 +29,10 @@ Options:
   -h, --help                Show this help
 
 Examples:
-  cc-seatbelt claude                         # sandbox claude in \$PWD
-  cc-seatbelt -d ~/projects/myapp claude     # sandbox in specific dir
-  cc-seatbelt -r ~/shared-libs claude        # grant extra read path
-  cc-seatbelt bash                           # explore the sandbox
+  cc-sandbox claude                         # sandbox claude in \$PWD
+  cc-sandbox -d ~/projects/myapp claude     # sandbox in specific dir
+  cc-sandbox -r ~/shared-libs claude        # grant extra read path
+  cc-sandbox bash                           # explore the sandbox
 USAGE
   exit 0
 }
@@ -112,7 +112,7 @@ build_extra_read_rules() {
 # ---- assemble profile ----
 TMPFILE="$( (mkdir -p "$HOME/.config/claude-code-sandbox-for-macos" && \
   mktemp "$HOME/.config/claude-code-sandbox-for-macos/profile.XXXXXXXXXX.sb") 2>/dev/null || \
-  mktemp "/tmp/cc-seatbelt-profile.XXXXXXXXXX.sb")"
+  mktemp "/tmp/cc-sandbox-profile.XXXXXXXXXX.sb")"
 
 {
   cat "$PROFILE_SRC"

@@ -2,7 +2,7 @@
 
 Claude Code has access to your filesystem by default. It has its own permission system that asks before running commands, but those guardrails live inside Claude itself. If a prompt injection were to bypass them, there's no second layer to fall back on.
 
-This tool adds that second layer, at the operating system level, using Apple's built-in sandbox. Even if Claude is tricked, macOS itself blocks the access. It wraps Claude Code so it can **only** reach the project folder you're working in. Everything else on your system is off limits. You use it by running `cc-seatbelt claude` instead of `claude`, that's it.
+This tool adds that second layer, at the operating system level, using Apple's built-in sandbox. Even if Claude is tricked, macOS itself blocks the access. It wraps Claude Code so it can **only** reach the project folder you're working in. Everything else on your system is off limits. You use it by running `cc-sandbox claude` instead of `claude`, that's it.
 
 **Requirements:** macOS only. Uses Apple's built-in `sandbox-exec`.
 
@@ -11,22 +11,22 @@ This tool adds that second layer, at the operating system level, using Apple's b
 ```bash
 git clone https://github.com/Connagh/claude-code-sandbox-for-macos
 cd claude-code-sandbox-for-macos
-chmod +x cc-seatbelt install.sh uninstall.sh
+chmod +x cc-sandbox install.sh uninstall.sh
 ```
 
 You can run it straight away:
 
 ```bash
-./cc-seatbelt claude
+./cc-sandbox claude
 ```
 
-Or install it so the `cc-seatbelt` command works from any folder:
+Or install it so the `cc-sandbox` command works from any folder:
 
 ```bash
 ./install.sh
 ```
 
-If your terminal doesn't recognise `cc-seatbelt` after installing, add this line to your `~/.zshrc` and restart your terminal:
+If your terminal doesn't recognise `cc-sandbox` after installing, add this line to your `~/.zshrc` and restart your terminal:
 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
@@ -36,7 +36,7 @@ Then from any project folder:
 
 ```bash
 cd ~/my-project
-cc-seatbelt claude
+cc-sandbox claude
 ```
 
 ## Test It Works
@@ -44,7 +44,7 @@ cc-seatbelt claude
 Open a sandboxed shell to check that files outside your project are blocked:
 
 ```bash
-cc-seatbelt bash
+cc-sandbox bash
 
 cat ~/.ssh/id_rsa       # should say "Operation not permitted"
 cat ~/.zshrc            # should say "Operation not permitted"
@@ -72,20 +72,20 @@ Everything else in your home folder — SSH keys, shell history, `.env` files, o
 <details>
 <summary><strong>Options</strong></summary>
 
-Most of the time you just need `cc-seatbelt claude`. But if you need more control:
+Most of the time you just need `cc-sandbox claude`. But if you need more control:
 
 ```bash
 # Work in a specific project folder instead of the current one
-cc-seatbelt -d ~/projects/myapp claude
+cc-sandbox -d ~/projects/myapp claude
 
 # Give Claude read access to an extra folder (e.g. shared libraries)
-cc-seatbelt -r ~/shared-libs claude
+cc-sandbox -r ~/shared-libs claude
 
 # Save the generated sandbox profile to a file so you can inspect it
-cc-seatbelt -o debug.sb claude
+cc-sandbox -o debug.sb claude
 
 # Open a plain shell inside the sandbox to poke around
-cc-seatbelt bash
+cc-sandbox bash
 ```
 
 </details>
@@ -98,7 +98,7 @@ If Claude Code needs access to an additional folder, edit `profile.sb` in the re
 You can also grant one-off read access without editing the profile using the `-r` flag:
 
 ```bash
-cc-seatbelt -r ~/some-other-folder claude
+cc-sandbox -r ~/some-other-folder claude
 ```
 
 ### Seeing What's Being Blocked
@@ -116,7 +116,7 @@ Or open Console.app and filter by `sandbox`.
 <details>
 <summary><strong>How It Works</strong></summary>
 
-The `cc-seatbelt` script takes the sandbox rules from `profile.sb`, combines them with the folder you're working in, and hands everything to macOS's `sandbox-exec`. From that point on, the operating system enforces the rules — Claude Code literally cannot access files outside the allowed paths, regardless of what it tries to do.
+The `cc-sandbox` script takes the sandbox rules from `profile.sb`, combines them with the folder you're working in, and hands everything to macOS's `sandbox-exec`. From that point on, the operating system enforces the rules — Claude Code literally cannot access files outside the allowed paths, regardless of what it tries to do.
 
 </details>
 
@@ -136,7 +136,7 @@ The `cc-seatbelt` script takes the sandbox rules from `profile.sb`, combines the
 ./uninstall.sh
 ```
 
-This removes the `cc-seatbelt` command and its config. Your projects are not touched.
+This removes the `cc-sandbox` command and its config. Your projects are not touched.
 
 ## License
 
