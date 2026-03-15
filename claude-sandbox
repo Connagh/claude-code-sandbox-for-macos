@@ -133,9 +133,7 @@ build_extra_read_rules() {
 }
 
 # ---- assemble profile ----
-TMPFILE="$( (mkdir -p "$HOME/.config/claude-code-sandbox-for-macos" && \
-  mktemp "$HOME/.config/claude-code-sandbox-for-macos/profile.XXXXXXXXXX.sb") 2>/dev/null || \
-  mktemp "/tmp/claude-sandbox-profile.XXXXXXXXXX.sb")"
+TMPFILE="$(mktemp /tmp/claude-sandbox-profile.XXXXXXXX)"
 
 {
   cat "$PROFILE_SRC"

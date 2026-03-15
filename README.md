@@ -1,6 +1,6 @@
 # Claude Code Sandbox for macOS
 
-![Claude Code Sandbox](https://i.imgur.com/qR7pv1v.jpeg)
+![Claude Code Sandbox](https://i.imgur.com/Wk2S8ym.jpeg)
 
 Claude Code has access to your system by default. There's no OS-level protection, so if a prompt injection tricks Claude into approving something, nothing stops it.
 
